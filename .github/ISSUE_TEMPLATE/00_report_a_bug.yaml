@@ -16,6 +16,29 @@ body:
             I have updated the issue title to something relevant and clear to understand the bug I'm facing
           required: true
 
+  - type: dropdown
+    id: panel_version
+    attributes:
+      label: Version of the panel
+      description: This is needed to know which Panel special case you might encounters, and identify similar issues
+      options:
+        - IQ Panel 2
+        - IQ Panel 2+
+        - IQ Panel 4
+        - IQ Pro
+        - Other (specify in the description)
+      multiple: false
+    validations:
+      required: true
+        
+  - type: input
+    id: gw_version
+    attributes:
+      label: Version of qolsysgw
+      description: This is needed to identify issues that are specific to a version
+    validations:
+      required: true
+          
   - type: textarea
     id: description
     attributes:
