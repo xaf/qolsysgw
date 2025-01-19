@@ -33,7 +33,7 @@ jobs:
 
       - name: Get the changed files that would require tests
         id: changed-files
-        uses: "tj-actions/changed-files@v44"
+        uses: "tj-actions/changed-files@v45"
         if: github.event_name != 'schedule'
         with:
           files: |
