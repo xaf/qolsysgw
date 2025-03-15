@@ -37,7 +37,7 @@ jobs:
           BASE_SHA: ${{ github.event.pull_request.base.sha || 'HEAD^' }}
           MODIFIED_FILES_APP: apps/** tests/** .github/workflows/build.yaml
         run: |
-          .github/scripts/get-changed-files.sh
+          .github/workflows/scripts/get-changed-files.sh
 
       - name: Check if a new release should be published
         if: github.event_name == 'push'
