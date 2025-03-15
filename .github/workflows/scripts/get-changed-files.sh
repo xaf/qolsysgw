@@ -3,8 +3,14 @@
 set -e
 
 # Complain if the BASE_SHA is not set
-BASE_SHA=${BASE_SHA:-HEAD^}
+BASE_SHA=${BASE_SHA:-${GITHUB_BASE_SHA:-HEAD^}}
 GITHUB_OUTPUT=${GITHUB_OUTPUT:-/dev/null}
+
+# Make sure to fetch the base sha
+if ! git log -1 "${BASE_SHA}" &>/dev/null; then
+    echo >&2 "Base sha ${BASE_SHA} not found, fetching from origin"
+    git fetch origin "${BASE_SHA}"
+fi
 
 # Function to check if any files matching patterns were modified/changed/deleted
 check_patterns() {
