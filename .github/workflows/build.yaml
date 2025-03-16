@@ -27,9 +27,8 @@ jobs:
       python_version: ${{ env.PYTHON_VERSION }}
       python_major: ${{ env.PYTHON_MAJOR }}
     steps:
-      - name: Checkout current commit
+      - name: Checkout
         uses: "actions/checkout@v4"
-        if: github.event_name != 'schedule'
 
       - name: Get the changed files that would require tests
         id: changed-files
