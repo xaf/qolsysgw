@@ -9,7 +9,37 @@ GITHUB_OUTPUT=${GITHUB_OUTPUT:-/dev/null}
 # Make sure to fetch the base sha
 if ! git log -1 "${BASE_SHA}" &>/dev/null; then
     echo >&2 "Base sha ${BASE_SHA} not found, fetching from origin"
-    git fetch origin "${BASE_SHA}"
+    if ! git fetch origin "${BASE_SHA}" 2>/dev/null; then
+        echo >&2 "Direct fetch failed, attempting to deepen repository"
+        depth_increment=100
+        max_depth=1000
+        curr_depth=$(git rev-list --count HEAD)
+
+        while ! git log -1 "${BASE_SHA}" &>/dev/null; do
+            # Check if we've reached the max depth
+            if [[ $curr_depth -ge $max_depth ]]; then
+                echo >&2 "Reached maximum depth of ${max_depth}"
+                break
+            fi
+
+            echo >&2 "Deepening repository by ${depth_increment} commits (current depth: ${curr_depth})"
+            git fetch --deepen=${depth_increment}
+
+            # Check if we got any new history
+            prev_depth=$curr_depth
+            curr_depth=$(git rev-list --count HEAD)
+
+            if [[ $curr_depth -eq $prev_depth ]]; then
+                echo >&2 "No new history after deepening"
+                break
+            fi
+        done
+
+        if ! git log -1 "${BASE_SHA}" &>/dev/null; then
+            echo >&2 "Failed to fetch base sha ${BASE_SHA}"
+            exit 1
+        fi
+    fi
 fi
 
 # Function to check if any files matching patterns were modified/changed/deleted
