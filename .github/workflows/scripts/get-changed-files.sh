@@ -44,30 +44,105 @@ fi
 
 # Function to check if any files matching patterns were modified/changed/deleted
 check_patterns() {
-    local result=false
-    local patterns=("$@")
-    local git_command=$1
-    shift
+    get_files "$@" >/dev/null && echo "true" || echo "false"
+}
 
+# Function to check if a value matches a pattern
+check_pattern() {
+    local value=$1
+    local original_pattern=$2
+    local patterns=("$original_pattern")
+
+    # If the pattern ends with a slash, it is a directory,
+    # and consider the /**-ending pattern
+    if [[ "$original_pattern" == */ ]]; then
+        patterns+=("$original_pattern**")
+    fi
+
+    # If the pattern ends with neither a wildcard, nor a /, add `/**`
+    if [[ "$original_pattern" != *'*' && "$original_pattern" != */ ]]; then
+        patterns+=("$original_pattern/**")
+    fi
+
+    # Now check if any of the patterns match
+    local pattern
     for pattern in "${patterns[@]}"; do
-        if $git_command "${BASE_SHA}" | grep -q "^${pattern}"; then
-            result=true
-            break
+        # Use bash's pattern matching
+        if [[ "$value" == $pattern ]]; then
+            return 0  # Match found
         fi
     done
 
-    echo "$result"
+    return 1  # No match found
 }
 
 # Function to get all files matching patterns for a specific status
 get_files() {
-    local patterns=("$@")
     local git_command=$1
     shift
+    local patterns=("$@")
 
+    # Get all changed files once
+    local all_files=$($git_command "${BASE_SHA}" | grep -v '^$')
+    all_files=($all_files)
+
+    # Separate exclusion and inclusion patterns
+    local include_patterns=()
+    local exclude_patterns=()
+    local pattern
     for pattern in "${patterns[@]}"; do
-        $git_command "${BASE_SHA}" | grep "^${pattern}" || true
+        if [[ "${pattern:0:1}" == "!" ]]; then
+            # Make it interpret the pattern using eval; this is a bit dangerous
+            # but we need to do it to get the correct pattern
+            # shellcheck disable=SC2086
+            stripped_pattern=($(eval echo "${pattern:1}"))
+            exclude_patterns+=("${stripped_pattern[@]}")
+        else
+            include_patterns+=("$pattern")
+        fi
     done
+
+    # Remove all files matching a negative pattern
+    for pattern in "${exclude_patterns[@]}"; do
+        local keep_files=()
+        local file
+        for file in "${all_files[@]}"; do
+            # Use bash's pattern matching
+            check_pattern "$file" "$pattern"
+            if ! check_pattern "$file" "$pattern"; then
+                keep_files+=("$file")
+            fi
+        done
+        all_files=("${keep_files[@]}")
+    done
+
+    # Check if any of the include patterns match
+    if [[ ${#include_patterns[@]} -ne 0 ]]; then
+        local keep_files=()
+        local file
+        for file in "${all_files[@]}"; do
+            for pattern in "${include_patterns[@]}"; do
+                # Use bash's pattern matching
+                if check_pattern "$file" "$pattern"; then
+                    keep_files+=("$file")
+                    break  # Break out of the inner loop if a match is found
+                fi
+            done
+        done
+        all_files=("${keep_files[@]}")
+    fi
+
+    # Print the list of files that matched, separated by a newline, if any
+    if [[ ${#all_files[@]} -gt 0 ]]; then
+        printf '%s\n' "${all_files[@]}"
+    fi
+
+    # Return 0 if any files matched, 1 otherwise
+    if [[ ${#all_files[@]} -gt 0 ]]; then
+        return 0
+    else
+        return 1
+    fi
 }
 
 # Git commands for different file states
@@ -91,7 +166,9 @@ while IFS= read -r var; do
 
     # Split the variable name and the value
     varname=${var%=*}
-    value=${var#*=}
+
+    # Read the value from the environment in case it might be multiline
+    value=${!varname}
 
     # Get the category from the variable name
     category=$(echo "$varname" | cut -d'_' -f3-)
@@ -107,9 +184,9 @@ while IFS= read -r var; do
     echo "${prefix}any_deleted=$(check_patterns git_deleted "${patterns[@]}")" | tee -a "$GITHUB_OUTPUT"
 
     # Get all files for each status for logging
-    changed_files=$(get_files git_changed "${patterns[@]}")
-    modified_files=$(get_files git_modified "${patterns[@]}")
-    deleted_files=$(get_files git_deleted "${patterns[@]}")
+    changed_files=$(get_files git_changed "${patterns[@]}" || true)
+    modified_files=$(get_files git_modified "${patterns[@]}" || true)
+    deleted_files=$(get_files git_deleted "${patterns[@]}" || true)
 
     # Convert newlines to spaces and set outputs
     echo "${prefix}changed_files=${changed_files//$'\n'/ }" | tee -a "$GITHUB_OUTPUT"
