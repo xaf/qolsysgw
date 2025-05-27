@@ -318,9 +318,14 @@ jobs:
         run: |
           echo "__version__ = \"${VERSION}\"" | tee build_version.py
 
+      - name: Build package
+        run: hatch build
+
+      - name: Test package
+        run: hatch run test
+
       - name: Publish to PyPI
-        run: |
-          hatch publish
+        uses: pypa/gh-action-pypi-publish@release/v1
 
 
   auto-merge:
