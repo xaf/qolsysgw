@@ -62,7 +62,10 @@ class ADAPI(object):
 
         return asyncio.create_task(coro)
 
-    async def get_plugin_config(self, **kwargs):
+    def get_ad_version(self):
+        return '4.5.0'
+
+    def get_plugin_config(self, **kwargs):
         return deepcopy(self.PLUGIN_CONFIG)
 
     async def wait_for_next_log(self, *args, **kwargs):

@@ -68,6 +68,14 @@ def fqcn(o):
     return f'{mod}.{cls.__qualname__}'
 
 
+def versiontuple(v):
+    """
+    Converts a semgrep version into a version tuple
+    """
+    v = v.split('-')[0]  # Remove any pre-release flag, we're not that smart
+    return tuple(map(int, (v.split('.'))))
+
+
 class QolsysGateway(Mqtt):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -105,7 +113,13 @@ class QolsysGateway(Mqtt):
 
         cfg = self._cfg = QolsysGatewayConfig(self.args)
 
-        mqtt_plugin_cfg = await self.get_plugin_config(namespace=cfg.mqtt_namespace)
+        # Handle the change in the function becoming sync vs. async
+        ad_version = self.get_ad_version()
+        if versiontuple(ad_version) >= (4, 5, 0):
+            mqtt_plugin_cfg = self.get_plugin_config(namespace=cfg.mqtt_namespace)
+        else:
+            mqtt_plugin_cfg = await self.get_plugin_config(namespace=cfg.mqtt_namespace)
+
         if mqtt_plugin_cfg is None:
             raise MqttPluginUnavailableException(
                 'Unable to load the MQTT Plugin from AppDaemon, have you '
