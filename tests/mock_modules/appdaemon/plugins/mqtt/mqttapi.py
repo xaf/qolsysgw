@@ -65,7 +65,7 @@ class ADAPI(object):
     def get_ad_version(self):
         return '4.5.2'
 
-    async def get_plugin_config(self, **kwargs):
+    def get_plugin_config(self, **kwargs):
         return deepcopy(self.PLUGIN_CONFIG)
 
     async def wait_for_next_log(self, *args, **kwargs):
