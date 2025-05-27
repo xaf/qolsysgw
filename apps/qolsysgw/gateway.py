@@ -114,8 +114,8 @@ class QolsysGateway(Mqtt):
         cfg = self._cfg = QolsysGatewayConfig(self.args)
 
         # Handle the change in the function becoming sync vs. async
-        ad_version = self.get_ad_version()
-        if versiontuple(ad_version) >= (4, 5, 0):
+        ad_version = versiontuple(self.get_ad_version())
+        if ad_version >= (4, 5, 0) and ad_version < (4, 5, 2):
             mqtt_plugin_cfg = self.get_plugin_config(namespace=cfg.mqtt_namespace)
         else:
             mqtt_plugin_cfg = await self.get_plugin_config(namespace=cfg.mqtt_namespace)
