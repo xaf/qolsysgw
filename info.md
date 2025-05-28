@@ -44,6 +44,7 @@ You can refer to the [README](https://github.com/XaF/qolsysgw#readme) for the de
 ### _Next (dev)_
 
  * 🐛 **[bugfix]** fix: appdaemon 4.5.2 does not fix sync/async for `get_plugin_config` (#177)
+ * 🐛 **[bugfix]** fix: handle appdaemon async issue for both container and plugin
 {%   endif %}
 {%   if parsed_version < [1, 6, 1] -%}
 ### Version 1.6.1
