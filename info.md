@@ -40,8 +40,8 @@ You can refer to the [README](https://github.com/XaF/qolsysgw#readme) for the de
 {% else -%}
 {% set parsed_version = version_installed.split('-')[0].replace('v', '').split('.') | map('int') | list -%}
 ## ChangeLog
-{%   if true -%}
-### _Next (dev)_
+{%   if parsed_version < [1, 6, 2] -%}
+### Version 1.6.2
 
  * 🐛 **[bugfix]** fix: appdaemon 4.5.2 does not fix sync/async for `get_plugin_config` (#177)
  * 🐛 **[bugfix]** fix: handle appdaemon async issue for both container and plugin
