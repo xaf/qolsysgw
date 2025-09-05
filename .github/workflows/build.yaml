@@ -119,7 +119,7 @@ jobs:
         continue-on-error: true
 
       - name: Identify bot comments to hide
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         if: steps.tests.outcome == 'success' && github.event_name == 'pull_request' && !github.event.pull_request.head.repo.fork
         with:
           script: |
