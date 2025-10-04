@@ -190,17 +190,27 @@ class QolsysSensor(QolsysObservable):
                 self._last_closed_tampered_at - self._last_open_tampered_at < 1)
 
     def open(self):
-        if self.is_open and not self._next_status_update_is_status():
-            self._last_open_tampered_at = time.time()
-            self.tampered = True
+        if self.is_open:
+            # Check if this might be a tamper event (rapid successive opens)
+            current_time = time.time()
+            if (self._last_open_tampered_at is not None and
+                current_time - self._last_open_tampered_at < 0.5):
+                # This looks like a tamper event (very rapid successive opens)
+                self.tampered = True
+            # Update the last open time regardless
+            self._last_open_tampered_at = current_time
         else:
+            # Normal state change from closed to open
             self.status = 'Open'
+            self._last_open_tampered_at = time.time()
 
     def closed(self):
         if self.tampered:
             self._last_closed_tampered_at = time.time()
             self.tampered = False
-        else:
+        # CRITICAL: Always update status to closed when we receive a close event
+        # This ensures sensors don't get stuck in the open state
+        if self.is_open:
             self.status = 'Closed'
 
     def __str__(self):
