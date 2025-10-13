@@ -262,7 +262,7 @@ jobs:
           .github/workflows/scripts/release.py --update-changelog
 
       - name: Commit changes
-        uses: stefanzweifel/git-auto-commit-action@v6
+        uses: stefanzweifel/git-auto-commit-action@v7
         with:
           file_pattern: "info.md"
           commit_message: 📒 Update changelog for future release
