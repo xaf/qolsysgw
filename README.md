@@ -83,7 +83,13 @@ workflows:
   (software version 4.1 or greater),
   for which you have the **dealer code** (defaults to `2222`). In some cases,
   the _installer code_ (defaults to `1111`) might be sufficient, but in my
-  experience, it was not, as the required menus were not visible. (_**NOTE:** If you have access to the installer code, you can use the advanced settings to reset all user settings. This will reset the dealer code to the default 2222 without you needing access to the current dealer code._)
+  experience, it was not, as the required menus were not visible. 
+> [!NOTE]
+> <details>
+> <summary>You may be able to reset dealer code</summary>
+> If you have access to the installer code, you can use the advanced settings to reset all user settings.
+> This will reset the dealer code to the default 2222 without you needing access to the current dealer code.
+> </details>
 
 - Understanding that this automation is not part of the core of Home Assistant
   and is thus not officially supported by Home Assistant. By using it, you
