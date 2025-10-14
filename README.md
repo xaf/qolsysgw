@@ -16,28 +16,26 @@ keep them up to date with the information coming from the panel, while
 providing you with the means to arm, disarm or trigger your alarm directly
 from Home Assistant, manually or through automations.
 
-
 - [How It Works](#how-it-works)
 - [Requirements](#requirements)
 - [Installation](#installation)
-   - [Installing Home Assistant](#installing-home-assistant)
-   - [Installing an MQTT Broker](#installing-an-mqtt-broker)
-   - [Installing AppDaemon](#installing-appdaemon)
-   - [Installing HACS (optional, recommended)](#installing-hacs-optional-recommended)
-   - [Installing Qolsys Gateway](#installing-qolsys-gateway)
-      - [With HACS (recommended)](#with-hacs-recommended)
-      - [Manually](#manually)
+  - [Installing Home Assistant](#installing-home-assistant)
+  - [Installing an MQTT Broker](#installing-an-mqtt-broker)
+  - [Installing AppDaemon](#installing-appdaemon)
+  - [Installing HACS (optional, recommended)](#installing-hacs-optional-recommended)
+  - [Installing Qolsys Gateway](#installing-qolsys-gateway)
+    - [With HACS (recommended)](#with-hacs-recommended)
+    - [Manually](#manually)
 - [Configuration](#configuration)
-   - [Configuring the MQTT integration in Home Assistant](#configuring-the-mqtt-integration-in-home-assistant)
-   - [Configuring your Qolsys IQ Panel](#configuring-your-qolsys-iq-panel)
-   - [Configuring Qolsys Gateway](#configuring-qolsys-gateway)
-      - [Required configuration](#required-configuration)
-      - [Optional configuration related to the Qolsys Panel itself](#optional-configuration-related-to-the-qolsys-panel-itself)
-      - [Optional configuration related to the representation of the panel in Home Assistant](#optional-configuration-related-to-the-representation-of-the-panel-in-home-assistant)
-      - [Optional configuration related to MQTT & AppDaemon](#optional-configuration-related-to-mqtt--appdaemon)
+  - [Configuring the MQTT integration in Home Assistant](#configuring-the-mqtt-integration-in-home-assistant)
+  - [Configuring your Qolsys IQ Panel](#configuring-your-qolsys-iq-panel)
+  - [Configuring Qolsys Gateway](#configuring-qolsys-gateway)
+    - [Required configuration](#required-configuration)
+    - [Optional configuration related to the Qolsys Panel itself](#optional-configuration-related-to-the-qolsys-panel-itself)
+    - [Optional configuration related to the representation of the panel in Home Assistant](#optional-configuration-related-to-the-representation-of-the-panel-in-home-assistant)
+    - [Optional configuration related to MQTT \& AppDaemon](#optional-configuration-related-to-mqtt--appdaemon)
 - [Other documentation](#other-documentation)
 - [Acknowledgements and thanks](#acknowledgements-and-thanks)
-
 
 ## How It Works
 
@@ -79,14 +77,13 @@ workflows:
       configured actions. They can be used to arm or disarm the system,
       or even to trigger the alarm on the device.
 
-
 ## Requirements
 
 - A Qolsys IQ Panel 2 or 2+ (software version 2.5.3 or greater), or 4
   (software version 4.1 or greater),
   for which you have the **dealer code** (defaults to `2222`). In some cases,
   the _installer code_ (defaults to `1111`) might be sufficient, but in my
-  experience, it was not, as the required menus were not visible.
+  experience, it was not, as the required menus were not visible. (_**NOTE:** If you have access to the installer code, you can use the advanced settings to reset all user settings. This will reset the dealer code to the default 2222 without you needing access to the current dealer code._)
 
 - Understanding that this automation is not part of the core of Home Assistant
   and is thus not officially supported by Home Assistant. By using it, you
@@ -97,17 +94,14 @@ workflows:
   and someone taking over control of your alarm system, so please be aware of
   what you are doing, and only do it if you are ready to take those risks.
 
-
 ## Installation
 
 Installing Qolsys Gateway requires the following steps.
-
 
 ### Installing Home Assistant
 
 You can get to the [Home Assistant documentation for installation][hass-install]
 page in order to setup Home Assistant for your needs.
-
 
 ### Installing an MQTT Broker
 
@@ -117,7 +111,6 @@ and configure an MQTT broker][hass-mqtt-broker].
 If you wish to use MQTT through a docker deployment, you can use the
 [`eclipse-mosquitto` docker image][mqtt-docker].
 If you can, setup a username and password to secure your broker even more.
-
 
 ### Installing AppDaemon
 
@@ -163,8 +156,8 @@ appdaemon:
       client_user: appdaemon # The username
       client_password: !secret mqtt_password # The password
 ```
-</details>
 
+</details>
 
 ### Installing HACS (optional, recommended)
 
@@ -175,7 +168,6 @@ manual steps that HACS will handle for you: you will be notified of updates, and
 can be installed by a click on a button.
 
 If you want to use HACS, you will have to follow [their documentation on how to install HACS][hacs-install].
-
 
 ### Installing Qolsys Gateway
 
@@ -209,8 +201,7 @@ Now, to install Qolsys Gateway with HACS, follow these steps:
    `Download this repository with HACS`
 6. A confirmation panel will appear, click on `Download`, and wait for HACS to
    proceed with the download
-6. Qolsys Gateway is now installed, and HACS will inform you when updates are available
-
+7. Qolsys Gateway is now installed, and HACS will inform you when updates are available
 
 #### Manually
 
@@ -221,7 +212,6 @@ directory of your AppDaemon installation.
 For instance, if your Home Assistant configuration directory is in `/hass/config/`,
 you most likely have AppDaemon setup in `/hass/config/appdaemon/`, and you can thus
 put `qolsysgw/` into `/hass/config/appdaemon/apps/`.
-
 
 ## Configuration
 
@@ -241,7 +231,6 @@ MQTT integration yet, you can do so with the following steps:
    authenticated connection)
 7. Click on `Submit`, Home Assistant will try and connect to the MQTT broker,
    and the integration will be setup upon success.
-
 
 ### Configuring your Qolsys IQ Panel
 
@@ -302,7 +291,6 @@ To enable the feature and get your secure token, you will need to:
 
    </details>
 
-
 ### Configuring Qolsys Gateway
 
 Qolsys Gateway needs to be configured in the `apps.yaml` file of AppDaemon.
@@ -310,7 +298,6 @@ If your Home Assistant configuration directory is in `/hass/config/`, and
 AppDaemon in `/hass/config/appdaemon/`, you will find this file in
 `/hass/config/appdaemon/apps/apps.yaml` (next to the `qolsysgw/` directory
 we moved here previously).
-
 
 #### Required configuration
 
@@ -342,7 +329,6 @@ With:
 - **panel_token:** the secure token we got from enabling Control4 on the
   Qolsys Panel.
 
-
 #### Optional configuration related to the Qolsys Panel itself
 
 - <details><summary><strong>panel_port:</strong> the port to use to connect to your Qolsys Panel with the
@@ -356,6 +342,7 @@ With:
     panel_port: 4242 # use the port 4242
     # ...
   ```
+
   </details>
 
 - <details><summary><strong>panel_mac:</strong> the mac address of your Qolsys Panel.
@@ -371,6 +358,7 @@ With:
     panel_mac: aa:bb:cc:dd:11:22
     # ...
   ```
+
   </details>
 
 - <details><summary><strong>panel_user_code:</strong> the code to send to your
@@ -387,6 +375,7 @@ With:
     panel_user_code: 1234 # there is a code '1234' allowing me to disarm my Qolsys Panel
     # ...
   ```
+
   </details>
 
 - <details><summary><strong>arm_away_exit_delay:</strong> the delay to set
@@ -407,6 +396,7 @@ With:
     arm_away_exit_delay: 0 # arming instantly when triggered from Home Assistant, since related to automations
     # ...
   ```
+
   </details>
 
 - <details><summary><strong>arm_stay_exit_delay:</strong> the delay to set
@@ -424,6 +414,7 @@ With:
     arm_stay_exit_delay: 10 # arming in 10 seconds when triggered from Home Assistant
     # ...
   ```
+
   </details>
 
 - <details><summary><strong>arm_away_bypass:</strong> whether or not to
@@ -444,6 +435,7 @@ With:
     arm_away_bypass: true # will bypass the open sensors if any
     # ...
   ```
+
   </details>
 
 - <details><summary><strong>arm_stay_bypass:</strong> whether or not to
@@ -464,6 +456,7 @@ With:
     arm_stay_bypass: false # will NOT bypass the open sensors if any
     # ...
   ```
+
   </details>
 
 - <details><summary><strong>arm_type_custom_bypass:</strong> the type of
@@ -481,8 +474,8 @@ With:
     arm_type_custom_bypass: arm_stay # to arm the panel in stay mode when using the custom bypass arming type
     # ...
   ```
-  </details>
 
+  </details>
 
 #### Optional configuration related to the representation of the panel in Home Assistant
 
@@ -498,6 +491,7 @@ With:
     panel_unique_id: meerkat # there cannot be another device with 'meerkat' as ID, it can help if you want to use Qolsys Gateway for two+ panels
     # ...
   ```
+
   </details>
 
 - <details><summary><strong>panel_device_name:</strong> the name of the device as it
@@ -513,6 +507,7 @@ With:
     panel_device_name: Steve # hey, Steve!
     # ...
   ```
+
   </details>
 
 - <details><summary><strong>ha_check_user_code:</strong> whether or not
@@ -536,6 +531,7 @@ With:
     ha_check_user_code: false # we want Qolsys Gateway to receive the code and perform the check
     # ...
   ```
+
   </details>
 
 - <details><summary><strong>ha_user_code:</strong> if you want to use a
@@ -557,6 +553,7 @@ With:
     ha_user_code: $up3r$ecre7!! # this will be the code expected from the user
     # ...
   ```
+
   </details>
 
 - <details><summary><strong>code_arm_required:</strong> whether or not
@@ -573,6 +570,7 @@ With:
     code_arm_required: true
     # ...
   ```
+
   </details>
 
 - <details><summary><strong>code_disarm_required:</strong> whether or not
@@ -588,6 +586,7 @@ With:
     code_disarm_required: true
     # ...
   ```
+
   </details>
 
 - <details><summary><strong>code_trigger_required:</strong> whether or not
@@ -604,6 +603,7 @@ With:
     code_trigger_required: true
     # ...
   ```
+
   </details>
 
 - <details><summary><strong>default_trigger_command:</strong> the trigger
@@ -617,6 +617,7 @@ With:
     default_trigger_command: TRIGGER_FIRE # if we want to trigger the fire alarm by default
     # ...
   ```
+
   </details>
 
 - <details><summary><strong>default_sensor_device_class:</strong> the sensor
@@ -631,6 +632,7 @@ With:
     default_sensor_device_class: null # if we do not want to get a sensor if the device class is not directly mapped
     # ...
   ```
+
   </details>
 
 - <details><summary><strong>enable_static_sensors_by_default:</strong>
@@ -648,8 +650,8 @@ With:
     enable_static_sensors_by_default: true
     # ...
   ```
-  </details>
 
+  </details>
 
 #### Optional configuration related to MQTT & AppDaemon
 
@@ -665,6 +667,7 @@ With:
     mqtt_namespace: mqtt-homeassistant # if we used that namespace in appdaemon.yaml
     # ...
   ```
+
   </details>
 
 - <details><summary><strong>mqtt_retain:</strong> whether or not we should set
@@ -684,6 +687,7 @@ With:
     mqtt_retain: false # if we do not want to use MQTT retain
     # ...
   ```
+
   </details>
 
 - <details><summary><strong>discovery_topic:</strong> The topic base that Home
@@ -698,6 +702,7 @@ With:
     discovery_topic: hass-discovery # if the discovery_prefix was changed to hass-discovery in Home Assistant
     # ...
   ```
+
   </details>
 
 - <details><summary><strong>control_topic:</strong> the topic to use to
@@ -714,6 +719,7 @@ With:
     control_topic: panel_{panel_unique_id}/control
     # ...
   ```
+
   </details>
 
 - <details><summary><strong>event_topic:</strong> the topic to use to
@@ -730,6 +736,7 @@ With:
     event_topic: panel_{panel_unique_id}/event
     # ...
   ```
+
   </details>
 
 - <details><summary><strong>user_control_token:</strong> a fixed control
@@ -745,15 +752,14 @@ With:
     user_control_token: My$ecr3tT0k3n!
     # ...
   ```
-  </details>
 
+  </details>
 
 ## Other documentation
 
 - [The known Qolsys Panel interactions](./docs/qolsys-panel-interactions.md)
 - [Qolsys Gateway's control commands](./docs/qolsysgw-control-commands.md)
 - [Qolsys Gateway's entities](./docs/qolsysgw-entities.md)
-
 
 ## Acknowledgements and thanks
 
@@ -769,10 +775,10 @@ features and a different way to handle events and actions. This project is not
 using a line of code of <code>ad-qolsys</code>, but was initially inspired
 by it.
 
-
 <!--
 List of links used in that page, sorted alphabetically by tag
 -->
+
 [ad-qolsys]: https://github.com/roopesh/ad-qolsys
 [appdaemon-docker]: https://hub.docker.com/r/acockburn/appdaemon/
 [appdaemon-hass-plugin]: https://appdaemon.readthedocs.io/en/latest/CONFIGURE.html#configuration-of-the-hass-plugin
