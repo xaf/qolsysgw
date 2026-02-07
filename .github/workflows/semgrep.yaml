@@ -30,7 +30,7 @@ jobs:
 
     steps:
       - name: Checkout commit
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - run: semgrep ci
         env:
