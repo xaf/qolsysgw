@@ -1,3 +1,4 @@
+import asyncio
 import logging
 import traceback
 import uuid
@@ -83,6 +84,7 @@ class QolsysGateway(Mqtt):
         self._qolsys_socket = None
         self._factory = None
         self._state = None
+        self._event_lock = asyncio.Lock()
         self._redirect_logging()
 
     def _redirect_logging(self):
@@ -222,88 +224,92 @@ class QolsysGateway(Mqtt):
     async def mqtt_event_callback(self, event: QolsysEvent):
         LOGGER.debug(f'MQTT callback for event: {event}')
 
-        if isinstance(event, QolsysEventInfoSummary):
-            self._state.update(event)
+        # Use a lock to ensure events are processed sequentially
+        # This prevents race conditions when multiple MQTT messages
+        # arrive quickly and could be processed concurrently
+        async with self._event_lock:
+            if isinstance(event, QolsysEventInfoSummary):
+                self._state.update(event)
 
-        elif isinstance(event, QolsysEventInfoSecureArm):
-            LOGGER.debug(f'INFO SecureArm partition_id={event.partition_id} '
-                         f'value={event.value}')
+            elif isinstance(event, QolsysEventInfoSecureArm):
+                LOGGER.debug(f'INFO SecureArm partition_id={event.partition_id} '
+                             f'value={event.value}')
 
-            partition = self._state.partition(event.partition_id)
-            if partition is None:
-                LOGGER.warning(f'Partition {event.partition_id} not found')
-                return
+                partition = self._state.partition(event.partition_id)
+                if partition is None:
+                    LOGGER.warning(f'Partition {event.partition_id} not found')
+                    return
 
-            partition.secure_arm = event.value
+                partition.secure_arm = event.value
 
-        elif isinstance(event, QolsysEventZoneEventActive):
-            LOGGER.debug(f'ACTIVE zone={event.zone}')
+            elif isinstance(event, QolsysEventZoneEventActive):
+                LOGGER.debug(f'ACTIVE zone={event.zone}')
 
-            if event.zone.status.lower() == 'open':
-                self._state.zone_open(event.zone.id)
+                if event.zone.status.lower() == 'open':
+                    self._state.zone_open(event.zone.id)
+                else:
+                    self._state.zone_closed(event.zone.id)
+
+            elif isinstance(event, QolsysEventZoneEventUpdate):
+                LOGGER.debug(f'UPDATE zone={event.zone}')
+
+                # This event provides a full zone object, so we need to provide
+                # it our current partition object
+                partition = self._state.partition(event.zone.partition_id)
+                if partition is None:
+                    LOGGER.warning(f'Partition {event.zone.partition_id} not found')
+                    return
+                event.zone.partition = partition
+
+                self._state.zone_update(event.zone)
+
+            elif isinstance(event, QolsysEventZoneEventAdd):
+                LOGGER.debug(f'ADD zone={event.zone}')
+
+                # This event provides a full zone object, so we need to provide
+                # it our current partition object
+                partition = self._state.partition(event.zone.partition_id)
+                if partition is None:
+                    LOGGER.warning(f'Partition {event.zone.partition_id} not found')
+                    return
+                event.zone.partition = partition
+
+                self._state.zone_add(event.zone)
+
+            elif isinstance(event, QolsysEventArming):
+                LOGGER.debug(f'ARMING partition_id={event.partition_id} '
+                             f'status={event.arming_type}')
+
+                partition = self._state.partition(event.partition_id)
+                if partition is None:
+                    LOGGER.warning(f'Partition {event.partition_id} not found')
+                    return
+
+                partition.status = event.arming_type
+
+            elif isinstance(event, QolsysEventAlarm):
+                LOGGER.debug(f'ALARM partition_id={event.partition_id}')
+
+                partition = self._state.partition(event.partition_id)
+                if partition is None:
+                    LOGGER.warning(f'Partition {event.partition_id} not found')
+                    return
+
+                partition.triggered(alarm_type=event.alarm_type)
+
+            elif isinstance(event, QolsysEventError):
+                LOGGER.debug(f'ERROR partition_id={event.partition_id}')
+
+                partition = self._state.partition(event.partition_id)
+                if partition is None:
+                    LOGGER.warning(f'Partition {event.partition_id} not found')
+                    return
+
+                partition.errored(error_type=event.error_type,
+                                  error_description=event.description)
+
             else:
-                self._state.zone_closed(event.zone.id)
-
-        elif isinstance(event, QolsysEventZoneEventUpdate):
-            LOGGER.debug(f'UPDATE zone={event.zone}')
-
-            # This event provides a full zone object, so we need to provide
-            # it our current partition object
-            partition = self._state.partition(event.zone.partition_id)
-            if partition is None:
-                LOGGER.warning(f'Partition {event.zone.partition_id} not found')
-                return
-            event.zone.partition = partition
-
-            self._state.zone_update(event.zone)
-
-        elif isinstance(event, QolsysEventZoneEventAdd):
-            LOGGER.debug(f'ADD zone={event.zone}')
-
-            # This event provides a full zone object, so we need to provide
-            # it our current partition object
-            partition = self._state.partition(event.zone.partition_id)
-            if partition is None:
-                LOGGER.warning(f'Partition {event.zone.partition_id} not found')
-                return
-            event.zone.partition = partition
-
-            self._state.zone_add(event.zone)
-
-        elif isinstance(event, QolsysEventArming):
-            LOGGER.debug(f'ARMING partition_id={event.partition_id} '
-                         f'status={event.arming_type}')
-
-            partition = self._state.partition(event.partition_id)
-            if partition is None:
-                LOGGER.warning(f'Partition {event.partition_id} not found')
-                return
-
-            partition.status = event.arming_type
-
-        elif isinstance(event, QolsysEventAlarm):
-            LOGGER.debug(f'ALARM partition_id={event.partition_id}')
-
-            partition = self._state.partition(event.partition_id)
-            if partition is None:
-                LOGGER.warning(f'Partition {event.partition_id} not found')
-                return
-
-            partition.triggered(alarm_type=event.alarm_type)
-
-        elif isinstance(event, QolsysEventError):
-            LOGGER.debug(f'ERROR partition_id={event.partition_id}')
-
-            partition = self._state.partition(event.partition_id)
-            if partition is None:
-                LOGGER.warning(f'Partition {event.partition_id} not found')
-                return
-
-            partition.errored(error_type=event.error_type,
-                              error_description=event.description)
-
-        else:
-            LOGGER.info(f'UNCAUGHT event {event}; ignored')
+                LOGGER.info(f'UNCAUGHT event {event}; ignored')
 
     async def mqtt_control_callback(self, control: QolsysControl):
         if control.session_token != self._session_token and (
