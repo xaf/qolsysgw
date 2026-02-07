@@ -19,7 +19,11 @@ class MqttListener(object):
         self._callback = callback or defaultLoggerCallback
         self._logger = logger or LOGGER
 
-        app.mqtt_subscribe(topic, namespace=namespace)
+        # Note: mqtt_subscribe is intentionally NOT called here.
+        # listen_event with event='MQTT_MESSAGE' handles both subscription
+        # and callback registration in AppDaemon. Calling both mqtt_subscribe
+        # and listen_event can cause duplicate event delivery in some
+        # AppDaemon versions.
         app.listen_event(self.event_callback, event='MQTT_MESSAGE',
                          topic=topic, namespace=namespace)
 
