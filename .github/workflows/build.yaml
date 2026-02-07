@@ -230,7 +230,7 @@ jobs:
         id: tests
         run: |
           set -eo pipefail
-          pytest --cache-clear tests/end-to-end/
+          pytest --cache-clear -s tests/end-to-end/
 
 
   update_changelog:
