@@ -780,7 +780,7 @@ List of links used in that page, sorted alphabetically by tag
 [appdaemon-mqtt-plugin]: https://appdaemon.readthedocs.io/en/latest/CONFIGURE.html#configuration-of-the-mqtt-plugin
 [appdaemon]: https://github.com/AppDaemon/appdaemon
 [asyncio]: https://docs.python.org/3/library/asyncio.html
-[hacs-install]: https://hacs.xyz/docs/setup/download
+[hacs-install]: https://hacs.xyz/docs/use
 [hacs-pr]: https://github.com/hacs/default/pull/1173
 [hass-community-thread]: https://community.home-assistant.io/t/qolsys-iq-panel-2-and-3rd-party-integration/231405
 [hass-install]: https://www.home-assistant.io/installation/
