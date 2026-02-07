@@ -83,10 +83,12 @@ class TestEndtoendQolsysGw(unittest.IsolatedAsyncioTestCase):
     def _print_container_versions(self):
         """Print the versions of the containers being used for debugging.
 
-        Uses sys.stderr to ensure output is visible even when pytest
-        captures stdout.
+        Uses sys.__stderr__ (the original stderr before pytest captures it)
+        to ensure output is always visible in CI logs.
         """
-        print('\n=== Container Versions ===', file=sys.stderr)
+        # Use the original stderr to bypass pytest's capture
+        output = sys.__stderr__
+        print('\n=== Container Versions ===', file=output, flush=True)
         for service, container_name in self.CONTAINERS.items():
             try:
                 # Get the image name and digest
@@ -97,12 +99,12 @@ class TestEndtoendQolsysGw(unittest.IsolatedAsyncioTestCase):
                     text=True,
                 )
                 if result.returncode == 0:
-                    print(f'{service}: {result.stdout.strip()}', file=sys.stderr)
+                    print(f'{service}: {result.stdout.strip()}', file=output, flush=True)
                 else:
-                    print(f'{service}: unable to get version', file=sys.stderr)
+                    print(f'{service}: unable to get version', file=output, flush=True)
             except Exception as e:
-                print(f'{service}: error getting version - {e}', file=sys.stderr)
-        print('=== End Container Versions ===\n', file=sys.stderr)
+                print(f'{service}: error getting version - {e}', file=output, flush=True)
+        print('=== End Container Versions ===\n', file=output, flush=True)
 
     def setUp(self):
         self.CONTAINERS = {}
