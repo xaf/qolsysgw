@@ -5,6 +5,7 @@ import random
 import re
 import shlex
 import subprocess
+import sys
 import tempfile
 import unittest
 
@@ -79,6 +80,30 @@ class TestEndtoendQolsysGw(unittest.IsolatedAsyncioTestCase):
         self._docker_is_up = False
         return run
 
+    def _print_container_versions(self):
+        """Print the versions of the containers being used for debugging.
+
+        Uses sys.stderr to ensure output is visible even when pytest
+        captures stdout.
+        """
+        print('\n=== Container Versions ===', file=sys.stderr)
+        for service, container_name in self.CONTAINERS.items():
+            try:
+                # Get the image name and digest
+                result = subprocess.run(
+                    ['docker', 'inspect', '--format',
+                     '{{.Config.Image}} ({{.Image}})', container_name],
+                    capture_output=True,
+                    text=True,
+                )
+                if result.returncode == 0:
+                    print(f'{service}: {result.stdout.strip()}', file=sys.stderr)
+                else:
+                    print(f'{service}: unable to get version', file=sys.stderr)
+            except Exception as e:
+                print(f'{service}: error getting version - {e}', file=sys.stderr)
+        print('=== End Container Versions ===\n', file=sys.stderr)
+
     def setUp(self):
         self.CONTAINERS = {}
         self._tmpdir = tempfile.TemporaryDirectory(
@@ -88,6 +113,14 @@ class TestEndtoendQolsysGw(unittest.IsolatedAsyncioTestCase):
 
     def tearDown(self):
         if hasattr(self, '_docker_is_up') and self._docker_is_up:
+            # Fix permissions on files created by containers before stopping them
+            # This allows the temp directory cleanup to work properly
+            try:
+                self._docker_compose('exec', '-T', 'appdaemon',
+                                     'chmod', '-R', '777', '/conf')
+            except Exception:
+                pass  # Best effort - container might not be running
+
             # Stop and destroy containers
             self._docker_compose_down()
 
@@ -130,6 +163,9 @@ class TestEndtoendQolsysGw(unittest.IsolatedAsyncioTestCase):
 
         # Start containers
         self._docker_compose_up()
+
+        # Print container versions for debugging
+        self._print_container_versions()
 
         # Grab logs from AppDaemon
         appdaemon = AppDaemonDockerLogReader(
