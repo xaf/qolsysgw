@@ -5,6 +5,7 @@ import random
 import re
 import shlex
 import subprocess
+import sys
 import tempfile
 import unittest
 
@@ -93,13 +94,12 @@ class TestEndtoendQolsysGw(unittest.IsolatedAsyncioTestCase):
     def _print_container_versions(self):
         """Print the versions of the containers being used for debugging.
 
-        Uses os.write to file descriptor 2 (stderr) directly to bypass
-        pytest's capture mechanism completely.
+        Uses sys.__stderr__ (the original stderr before pytest captures it)
+        to ensure output is always visible in CI logs.
         """
-        def write_line(msg):
-            os.write(2, f'{msg}\n'.encode())
-
-        write_line('\n=== Container Versions ===')
+        # Use the original stderr to bypass pytest's capture
+        output = sys.__stderr__
+        print('\n=== Container Versions ===', file=output, flush=True)
         for service, container_name in self.CONTAINERS.items():
             try:
                 # Get the image name and digest
@@ -110,12 +110,12 @@ class TestEndtoendQolsysGw(unittest.IsolatedAsyncioTestCase):
                     text=True,
                 )
                 if result.returncode == 0:
-                    write_line(f'{service}: {result.stdout.strip()}')
+                    print(f'{service}: {result.stdout.strip()}', file=output, flush=True)
                 else:
-                    write_line(f'{service}: unable to get version')
+                    print(f'{service}: unable to get version', file=output, flush=True)
             except Exception as e:
-                write_line(f'{service}: error getting version - {e}')
-        write_line('=== End Container Versions ===\n')
+                print(f'{service}: error getting version - {e}', file=output, flush=True)
+        print('=== End Container Versions ===\n', file=output, flush=True)
 
     def setUp(self):
         self.CONTAINERS = {}
