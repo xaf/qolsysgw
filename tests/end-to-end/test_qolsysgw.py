@@ -80,6 +80,17 @@ class TestEndtoendQolsysGw(unittest.IsolatedAsyncioTestCase):
         self._docker_is_up = False
         return run
 
+    def _docker_fix_permissions_for_cleanup(self, service, path):
+        """Fix permissions on container-created files to allow temp directory cleanup.
+
+        Docker containers may create files with different ownership that the
+        test process cannot delete. This chmod's them before stopping containers.
+        """
+        try:
+            self._docker_compose('exec', '-T', service, 'chmod', '-R', '777', path)
+        except Exception:
+            pass  # Best effort - container might not be running
+
     def _print_container_versions(self):
         """Print the versions of the containers being used for debugging.
 
@@ -117,11 +128,8 @@ class TestEndtoendQolsysGw(unittest.IsolatedAsyncioTestCase):
         if hasattr(self, '_docker_is_up') and self._docker_is_up:
             # Fix permissions on files created by containers before stopping them
             # This allows the temp directory cleanup to work properly
-            try:
-                self._docker_compose('exec', '-T', 'appdaemon',
-                                     'chmod', '-R', '777', '/conf')
-            except Exception:
-                pass  # Best effort - container might not be running
+            self._docker_fix_permissions_for_cleanup('appdaemon', '/conf')
+            self._docker_fix_permissions_for_cleanup('homeassistant', '/config')
 
             # Stop and destroy containers
             self._docker_compose_down()
