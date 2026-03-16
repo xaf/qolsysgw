@@ -113,10 +113,13 @@ class QolsysGateway(Mqtt):
 
         cfg = self._cfg = QolsysGatewayConfig(self.args)
 
-        # Handle the change in the function becoming sync vs. async
+        # Handle the change in the function becoming sync vs. async.
+        # get_plugin_config() became permanently synchronous in AD >= 4.5.0;
+        # the upper bound of < (4, 5, 3) was incorrect as the async variant
+        # was never restored in subsequent releases.
         ad_version = versiontuple(self.get_ad_version())
         async_removed = (ad_version >= (0, 17, 0) and ad_version < (0, 17, 2)) or \
-            (ad_version >= (4, 5, 0) and ad_version < (4, 5, 3))
+            (ad_version >= (4, 5, 0))
         if async_removed:
             mqtt_plugin_cfg = self.get_plugin_config(namespace=cfg.mqtt_namespace)
         else:
