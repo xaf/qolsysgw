@@ -28,7 +28,7 @@ jobs:
       python_major: ${{ env.PYTHON_MAJOR }}
     steps:
       - name: Checkout
-        uses: "actions/checkout@v6"
+        uses: "actions/checkout@v7"
 
       - name: Get the changed files that would require tests
         id: changed-files
@@ -86,7 +86,7 @@ jobs:
 
     steps:
       - name: Checkout current commit
-        uses: "actions/checkout@v6"
+        uses: "actions/checkout@v7"
 
       - name: Install python
         uses: "actions/setup-python@v6"
@@ -119,7 +119,7 @@ jobs:
         continue-on-error: true
 
       - name: Identify bot comments to hide
-        uses: actions/github-script@v8
+        uses: actions/github-script@v9
         if: steps.tests.outcome == 'success' && github.event_name == 'pull_request' && !github.event.pull_request.head.repo.fork
         with:
           script: |
@@ -207,7 +207,7 @@ jobs:
 
     steps:
       - name: Checkout current commit
-        uses: "actions/checkout@v6"
+        uses: "actions/checkout@v7"
 
       - name: Print docker versions
         run: |
@@ -249,7 +249,7 @@ jobs:
 
     steps:
       - name: Checkout current commit
-        uses: "actions/checkout@v6"
+        uses: "actions/checkout@v7"
         with:
           ref: ${{ github.ref }}
           token: ${{ secrets.COMMIT_TOKEN }}
@@ -284,7 +284,7 @@ jobs:
 
     steps:
       - name: Checkout current commit
-        uses: "actions/checkout@v6"
+        uses: "actions/checkout@v7"
 
       - name: Release version
         uses: ncipollo/release-action@v1
@@ -307,7 +307,7 @@ jobs:
 
     steps:
       - name: Checkout current commit
-        uses: "actions/checkout@v6"
+        uses: "actions/checkout@v7"
 
       - name: Install Hatch
         uses: pypa/hatch@install
@@ -341,7 +341,7 @@ jobs:
 
     steps:
       - name: Checkout current commit
-        uses: "actions/checkout@v6"
+        uses: "actions/checkout@v7"
 
       - name: Check and auto-merge on minor changes
         uses: ahmadnassri/action-dependabot-auto-merge@v2
