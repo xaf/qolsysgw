@@ -58,7 +58,7 @@ def get_mac_from_host(ip_or_host):
         # The arp command will automatically resolve the hostname to an
         # IP address for us if needed
         process = subprocess.run(['arp', ip_or_host], capture_output=True)
-    except subprocess.SubprocessError:
+    except (subprocess.SubprocessError, OSError):
         LOGGER.exception(f"Error trying to get the mac address for '{ip_or_host}'")
         return None
 
