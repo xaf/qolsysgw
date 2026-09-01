@@ -15,6 +15,10 @@ class TestUnitGetMacFromHost(unittest.TestCase):
         with mock.patch('subprocess.run', side_effect=subprocess.SubprocessError):
             self.assertIsNone(get_mac_from_host('random_host'))
 
+    def test_unit_returns_none_on_missing_arp_binary(self):
+        with mock.patch('subprocess.run', side_effect=FileNotFoundError):
+            self.assertIsNone(get_mac_from_host('random_host'))
+
     def test_unit_returns_none_on_mac_address_not_found(self):
         fixture = os.path.join(FIXTURES_DIR, 'subprocess_run_arp_unknown_host.txt')
         with open(fixture, 'rb') as f:
