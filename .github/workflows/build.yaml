@@ -305,6 +305,13 @@ jobs:
       - prepare-env
       - push_release
 
+    environment:
+      name: pypi
+      url: https://pypi.org/project/qolsys/
+
+    permissions:
+      id-token: write
+
     steps:
       - name: Checkout current commit
         uses: "actions/checkout@v7"
