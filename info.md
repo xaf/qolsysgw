@@ -44,6 +44,7 @@ You can refer to the [README](https://github.com/XaF/qolsysgw#readme) for the de
 ### _Next (dev)_
 
  * 🐛 **[bugfix]** fix: tolerate a missing arp binary in get_mac_from_host (#206)
+ * ✨ **[feature]** Add support for `Tamper` sensor (#191)
 {%   endif %}
 {%   if parsed_version < [1, 6, 2] -%}
 ### Version 1.6.2
