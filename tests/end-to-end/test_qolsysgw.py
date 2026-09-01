@@ -605,6 +605,19 @@ class TestEndtoendQolsysGw(unittest.IsolatedAsyncioTestCase):
                 'entity_id': 'binary_sensor.qolsys_panel_my_shock_sensor',
                 'state': 'off',
             },
+            {
+                'attributes': {
+                    'device_class': 'tamper',
+                    'friendly_name': 'Qolsys Panel Main Cabinet Tamper Sensor',
+                    'group': 'tamperzone',
+                    'zone_alarm_type': 3,
+                    'zone_physical_type': 1,
+                    'zone_type': 123,
+                    'tampered': False,
+                },
+                'entity_id': 'binary_sensor.qolsys_panel_main_cabinet_tamper_sensor',
+                'state': 'off',
+            },
         ]
         self._check_entity_states(ctx, expected_states, msg='Initial state')
 
@@ -649,6 +662,7 @@ class TestEndtoendQolsysGw(unittest.IsolatedAsyncioTestCase):
             200802,
             20081,
             20090,
+            20091,
         ]
         open_entities = [
             10001,
@@ -1084,6 +1098,19 @@ class TestEndtoendQolsysGw(unittest.IsolatedAsyncioTestCase):
                     'tampered': False,
                 },
                 'entity_id': 'binary_sensor.qolsys_panel_my_shock_sensor',
+                'state': 'on',
+            },
+            {
+                'attributes': {
+                    'device_class': 'tamper',
+                    'friendly_name': 'Qolsys Panel Main Cabinet Tamper Sensor',
+                    'group': 'tamperzone',
+                    'zone_alarm_type': 3,
+                    'zone_physical_type': 1,
+                    'zone_type': 123,
+                    'tampered': False,
+                },
+                'entity_id': 'binary_sensor.qolsys_panel_main_cabinet_tamper_sensor',
                 'state': 'on',
             },
         ]

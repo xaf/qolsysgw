@@ -380,3 +380,9 @@ class QolsysSensorShock(QolsysSensor):
     @classmethod
     def from_json(cls, data, partition, common=None):
         return cls.from_json_subclass('Shock', data, partition, common)
+
+
+class QolsysSensorTamperSensor(QolsysSensor):
+    @classmethod
+    def from_json(cls, data, partition, common=None):
+        return cls.from_json_subclass('Tamper Sensor', data, partition, common)

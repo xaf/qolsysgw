@@ -29,6 +29,7 @@ from qolsys.sensors import QolsysSensorTemperature
 from qolsys.sensors import QolsysSensorTilt
 from qolsys.sensors import QolsysSensorTranslator
 from qolsys.sensors import QolsysSensorWater
+from qolsys.sensors import QolsysSensorTamperSensor
 
 
 class TestIntegrationQolsysEvents(TestQolsysGatewayBase):
@@ -262,7 +263,7 @@ class TestIntegrationQolsysEvents(TestQolsysGatewayBase):
 
         with self.subTest(msg='Partition 1 is properly configured'):
             partition1 = state.partition(1)
-            self.assertEqual(14, len(partition1.sensors))
+            self.assertEqual(15, len(partition1.sensors))
             self.assertEqual(1, partition1.id)
             self.assertEqual('partition1', partition1.name)
             self.assertEqual('DISARM', partition1.status)
@@ -826,6 +827,29 @@ class TestIntegrationQolsysEvents(TestQolsysGatewayBase):
                 sensor_unique_id='002_0090',
                 sensor_state=sensor20090,
                 expected_device_class='vibration',
+                expected_enabled_by_default=True,
+            )
+
+        with self.subTest(msg='Sensor 20091 is properly configured'):
+            sensor20091 = partition1.zone(20091)
+            self.assertEqual(QolsysSensorTamperSensor, sensor20091.__class__)
+            self.assertEqual('002-0091', sensor20091.id)
+            self.assertEqual('Main Cabinet Tamper Sensor', sensor20091.name)
+            self.assertEqual('tamperzone', sensor20091.group)
+            self.assertEqual('Closed', sensor20091.status)
+            self.assertEqual('0', sensor20091.state)
+            self.assertEqual(20091, sensor20091.zone_id)
+            self.assertEqual(1, sensor20091.zone_physical_type)
+            self.assertEqual(3, sensor20091.zone_alarm_type)
+            self.assertEqual(123, sensor20091.zone_type)
+            self.assertEqual(1, sensor20091.partition_id)
+
+            await self._check_sensor_mqtt_messages(
+                gw=gw,
+                sensor_flat_name='main_cabinet_tamper_sensor',
+                sensor_unique_id='002_0091',
+                sensor_state=sensor20091,
+                expected_device_class='tamper',
                 expected_enabled_by_default=True,
             )
 

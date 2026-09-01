@@ -24,6 +24,7 @@ from qolsys.sensors import QolsysSensorShock
 from qolsys.sensors import QolsysSensorSiren
 from qolsys.sensors import QolsysSensorSmokeDetector
 from qolsys.sensors import QolsysSensorTakeoverModule
+from qolsys.sensors import QolsysSensorTamperSensor
 from qolsys.sensors import QolsysSensorTemperature
 from qolsys.sensors import QolsysSensorTilt
 from qolsys.sensors import QolsysSensorTranslator
@@ -448,6 +449,7 @@ class MqttWrapperQolsysSensor(MqttWrapper):
         QolsysSensorSiren: 'safety',
         QolsysSensorSmokeDetector: 'smoke',
         QolsysSensorTakeoverModule: 'safety',
+        QolsysSensorTamperSensor: 'tamper',
         QolsysSensorTemperature: 'heat',
         QolsysSensorTilt: 'garage_door',
         QolsysSensorTranslator: 'safety',
