@@ -7,6 +7,12 @@ on:
   pull_request:
   schedule:
     - cron: "0 0 * * *"
+  workflow_dispatch:
+    inputs:
+      release_version:
+        description: "Version to build and publish (for example, 1.7.0)"
+        required: true
+        type: string
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
@@ -45,6 +51,14 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
         run: |
           .github/workflows/scripts/release.py --printenv | tee -a "$GITHUB_ENV"
+
+      - name: Configure manually requested release
+        if: github.event_name == 'workflow_dispatch'
+        env:
+          RELEASE_VERSION: ${{ inputs.release_version }}
+        run: |
+          echo "PUBLISH_RELEASE=true" | tee -a "$GITHUB_ENV"
+          echo "RELEASE_VERSION=${RELEASE_VERSION}" | tee -a "$GITHUB_ENV"
 
       - name: Identify if testing is required
         run: |
@@ -277,7 +291,7 @@ jobs:
       - unit-integration-tests
       - end-to-end-tests
 
-    if: github.event_name == 'push' && needs.prepare-env.outputs.publish_release == 'true' && needs.unit-integration-tests.result != 'failure' && needs.end-to-end-tests.result != 'failure'
+    if: (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && needs.prepare-env.outputs.publish_release == 'true' && needs.unit-integration-tests.result != 'failure' && needs.end-to-end-tests.result != 'failure'
 
     permissions:
       contents: write

@@ -41,6 +41,18 @@ Changelog = "https://github.com/xaf/qolsysgw/commits/main/"
 [tool.hatch.version]
 path = "build_version.py"
 
+[tool.hatch.envs.default]
+dependencies = [
+  "flake8",
+  "pytest",
+]
+
+[tool.hatch.envs.default.scripts]
+test = [
+  "flake8 apps/qolsysgw/qolsys/",
+  "pytest --cache-clear tests/unit/qolsysgw/qolsys/",
+]
+
 [tool.hatch.build]
 skip-excluded-dirs = true
 
