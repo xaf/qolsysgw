@@ -40,6 +40,11 @@ You can refer to the [README](https://github.com/XaF/qolsysgw#readme) for the de
 {% else -%}
 {% set parsed_version = version_installed.split('-')[0].replace('v', '').split('.') | map('int') | list -%}
 ## ChangeLog
+{%   if true -%}
+### _Next (dev)_
+
+ * 🐛 **[bugfix]** fix: only subscribe to MQTT topics not covered by `client_topics` (#210)
+{%   endif %}
 {%   if parsed_version < [1, 7, 0] -%}
 ### Version 1.7.0
 
