@@ -34,6 +34,42 @@ class TestIntegrationQolsysGateway(TestQolsysGatewayBase):
 
         self.assertTrue(panel.is_client_connected)
 
+    async def test_integration_gateway_waits_from_start_of_messages(self):
+        calls = []
+
+        class MockPanel:
+            async def wait_for_next_message(self, **kwargs):
+                calls.append(kwargs)
+                return {'action': 'INFO'}
+
+        panel = MockPanel()
+        gw = object()
+
+        async def mock_init_panel_and_gw(**kwargs):
+            return panel, gw
+
+        self._init_panel_and_gw = mock_init_panel_and_gw
+
+        await self._init_panel_and_gw_and_wait()
+        await self._init_panel_and_gw_and_wait(return_info=True)
+
+        self.assertDictEqual(
+            {
+                'timeout': self._TIMEOUT,
+                'raise_on_timeout': True,
+                'startpos': 0,
+            },
+            calls[0],
+        )
+        self.assertDictEqual(
+            {
+                'timeout': self._TIMEOUT,
+                'filters': {'action': 'INFO'},
+                'startpos': 0,
+            },
+            calls[1],
+        )
+
     async def test_integration_gateway_stays_connected_on_non_json_data(self):
         panel, gw = await self._init_panel_and_gw_and_wait()
 
