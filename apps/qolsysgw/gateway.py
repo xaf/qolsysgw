@@ -147,11 +147,18 @@ class QolsysGateway(Mqtt):
             factory=self._factory
         )
 
+        # The MQTT plugin subscribes to its own `client_topics` on connect, so
+        # the listeners need it to know whether they still have to subscribe
+        # themselves; subscribing on top of an existing subscription makes the
+        # broker deliver every message twice (see mqtt/listener.py)
+        client_topics = mqtt_plugin_cfg.get('client_topics')
+
         MqttQolsysEventListener(
             app=self,
             namespace=cfg.mqtt_namespace,
             topic=cfg.event_topic,
             callback=self.mqtt_event_callback,
+            client_topics=client_topics,
         )
 
         MqttQolsysControlListener(
@@ -159,6 +166,7 @@ class QolsysGateway(Mqtt):
             namespace=cfg.mqtt_namespace,
             topic=cfg.control_topic,
             callback=self.mqtt_control_callback,
+            client_topics=client_topics,
         )
 
         self._qolsys_socket = QolsysSocket(
