@@ -62,6 +62,7 @@ class TestQolsysGatewayBase(unittest.IsolatedAsyncioTestCase):
             info = await panel.wait_for_next_message(
                 timeout=self._TIMEOUT,
                 filters={'action': 'INFO'},
+                startpos=0,
             )
 
             return panel, gw, info
@@ -71,6 +72,7 @@ class TestQolsysGatewayBase(unittest.IsolatedAsyncioTestCase):
         await panel.wait_for_next_message(
             timeout=self._TIMEOUT,
             raise_on_timeout=True,
+            startpos=0,
         )
 
         return panel, gw
