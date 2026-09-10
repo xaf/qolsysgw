@@ -248,7 +248,10 @@ class QolsysGateway(Mqtt):
             LOGGER.debug(f'ACTIVE zone={event.zone}')
 
             if event.zone.status.lower() == 'open':
-                self._state.zone_open(event.zone.id)
+                self._state.zone_open(
+                    event.zone.id,
+                    detect_tamper=self._cfg.enable_sensor_tamper_detection,
+                )
             else:
                 self._state.zone_closed(event.zone.id)
 

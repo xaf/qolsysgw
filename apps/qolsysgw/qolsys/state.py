@@ -90,11 +90,11 @@ class QolsysState(QolsysObservable):
 
         self._partitions[sensor.partition_id].add_sensor(sensor)
 
-    def zone_open(self, zone_id):
+    def zone_open(self, zone_id, detect_tamper=True):
         for partition in self.partitions:
             zone = partition.zone(zone_id)
             if zone is not None:
-                zone.open()
+                zone.open(detect_tamper=detect_tamper)
 
     def zone_closed(self, zone_id):
         for partition in self.partitions:
