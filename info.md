@@ -40,6 +40,11 @@ You can refer to the [README](https://github.com/XaF/qolsysgw#readme) for the de
 {% else -%}
 {% set parsed_version = version_installed.split('-')[0].replace('v', '').split('.') | map('int') | list -%}
 ## ChangeLog
+{%   if true -%}
+### _Next (dev)_
+
+ * 🐛 **[bugfix]** Fix MQTT last-error timestamp when no error is present (#212)
+{%   endif %}
 {%   if parsed_version < [1, 7, 1] -%}
 ### Version 1.7.1
 
