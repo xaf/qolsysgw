@@ -307,7 +307,7 @@ class MqttWrapperQolsysState(MqttWrapper):
             retain=self._mqtt_retain,
             payload=(self._state.last_exception.at
                      if self._state.last_exception
-                     else None),
+                     else 'None'),  # HA unknown sentinel; Python None sends an empty payload.
         )
 
 
