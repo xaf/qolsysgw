@@ -650,6 +650,23 @@ With:
   ```
   </details>
 
+- <details><summary><strong>enable_sensor_tamper_detection:</strong>
+  whether or not a sensor should be flagged as tampered when the panel reports
+  it as open while it is already open. Some setups, such as zones sharing a
+  hardwire module or multi-input sensors, receive repeated open messages that
+  are not tamper events, which can leave sensors wrongly reported as tampered
+  or open. Setting this to <code>false</code> makes those messages only update
+  the status of the sensor.
+  Defaults to <code>true</code>.</summary>
+
+  ```yaml
+  qolsys_panel:
+    # ...
+    enable_sensor_tamper_detection: false
+    # ...
+  ```
+  </details>
+
 
 #### Optional configuration related to MQTT & AppDaemon
 

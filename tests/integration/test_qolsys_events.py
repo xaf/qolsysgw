@@ -1130,6 +1130,132 @@ class TestIntegrationQolsysEvents(TestQolsysGatewayBase):
             self.assertTrue(data.sensor.is_closed)
             self.assertEqual('Closed', state['payload'])
 
+    def _zone_active_events(self, zone_id):
+        event_open = {
+            'event': 'ZONE_EVENT',
+            'zone_event_type': 'ZONE_ACTIVE',
+            'version': 1,
+            'zone': {
+                'status': 'Open',
+                'zone_id': zone_id,
+            },
+            'requestID': '<request_id>',
+        }
+
+        event_closed = deepcopy(event_open)
+        event_closed['zone']['status'] = 'Closed'
+
+        return event_open, event_closed
+
+    async def test_integration_event_zone_event_zone_active_tampered_while_open_does_not_stay_open(self):
+        # Using a sensor that's already open
+        zone_id = 10001
+        entity_id = 'my_window'
+
+        panel, gw, _, _ = await self._ready_panel_and_gw(
+            partition_ids=[0],
+            zone_ids=[zone_id],
+        )
+
+        sensor = gw._state.partition(0).zone(zone_id)
+        event_open, event_closed = self._zone_active_events(zone_id)
+
+        with self.subTest(msg='Sensor is tampered on second open message'):
+            with mock.patch('time.time', mock.MagicMock(return_value=42)):
+                await panel.writeline(event_open)
+
+                attributes = await gw.wait_for_next_mqtt_publish(
+                    timeout=self._TIMEOUT,
+                    filters={'topic': f'homeassistant/binary_sensor/'
+                                      f'{entity_id}/attributes'},
+                    raise_on_timeout=True,
+                )
+
+            self.assertTrue(sensor.tampered)
+            self.assertJsonSubDictEqual({'tampered': True}, attributes['payload'])
+
+        with self.subTest(msg='Sensor is untampered on closed message more than a second later'):
+            await panel.writeline(event_closed)
+
+            attributes = await gw.wait_for_next_mqtt_publish(
+                timeout=self._TIMEOUT,
+                filters={'topic': f'homeassistant/binary_sensor/'
+                                  f'{entity_id}/attributes'},
+                raise_on_timeout=True,
+            )
+
+            self.assertFalse(sensor.tampered)
+            self.assertTrue(sensor.is_open)
+            self.assertJsonSubDictEqual({'tampered': False}, attributes['payload'])
+
+        with self.subTest(msg='Sensor is not tampered again on next open message'):
+            await panel.writeline(event_open)
+
+            attributes = await gw.wait_for_next_mqtt_publish(
+                timeout=self._TIMEOUT,
+                filters={'topic': f'homeassistant/binary_sensor/'
+                                  f'{entity_id}/attributes'},
+            )
+
+            self.assertFalse(sensor.tampered)
+            self.assertTrue(sensor.is_open)
+            self.assertIsNone(attributes)
+
+        with self.subTest(msg='Sensor is closed on next closed message'):
+            await panel.writeline(event_closed)
+
+            state = await gw.wait_for_next_mqtt_publish(
+                timeout=self._TIMEOUT,
+                filters={'topic': f'homeassistant/binary_sensor/'
+                                  f'{entity_id}/state'},
+                raise_on_timeout=True,
+            )
+
+            self.assertFalse(sensor.tampered)
+            self.assertTrue(sensor.is_closed)
+            self.assertEqual('Closed', state['payload'])
+
+    async def test_integration_event_zone_event_zone_active_tamper_detection_disabled(self):
+        # Using a sensor that's already open
+        zone_id = 10001
+        entity_id = 'my_window'
+
+        panel, gw, _, _ = await self._ready_panel_and_gw(
+            partition_ids=[0],
+            zone_ids=[zone_id],
+            enable_sensor_tamper_detection=False,
+        )
+
+        sensor = gw._state.partition(0).zone(zone_id)
+        event_open, event_closed = self._zone_active_events(zone_id)
+
+        with self.subTest(msg='Sensor is not tampered on second open message'):
+            await panel.writeline(event_open)
+
+            attributes = await gw.wait_for_next_mqtt_publish(
+                timeout=self._TIMEOUT,
+                filters={'topic': f'homeassistant/binary_sensor/'
+                                  f'{entity_id}/attributes'},
+            )
+
+            self.assertFalse(sensor.tampered)
+            self.assertTrue(sensor.is_open)
+            self.assertIsNone(attributes)
+
+        with self.subTest(msg='Sensor is closed on closed message'):
+            await panel.writeline(event_closed)
+
+            state = await gw.wait_for_next_mqtt_publish(
+                timeout=self._TIMEOUT,
+                filters={'topic': f'homeassistant/binary_sensor/'
+                                  f'{entity_id}/state'},
+                raise_on_timeout=True,
+            )
+
+            self.assertFalse(sensor.tampered)
+            self.assertTrue(sensor.is_closed)
+            self.assertEqual('Closed', state['payload'])
+
     async def _test_integration_event_zone_event_zone_active(self, from_status, to_status):
         if from_status == 'Closed':
             zone_id = 10000

@@ -40,6 +40,7 @@ class QolsysGatewayConfig(object):
         'default_trigger_command': None,
         'default_sensor_device_class': 'safety',
         'enable_static_sensors_by_default': False,
+        'enable_sensor_tamper_detection': True,
     }
 
     def __init__(self, args=None, check=True):

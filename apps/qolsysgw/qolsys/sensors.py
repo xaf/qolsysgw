@@ -53,7 +53,7 @@ class QolsysSensor(QolsysObservable):
 
         self._tampered = False
         self._last_open_tampered_at = None
-        self._last_closed_tampered_at = None
+        self._expect_status_update = False
 
     @property
     def partition(self) -> QolsysPartition:
@@ -182,25 +182,23 @@ class QolsysSensor(QolsysObservable):
                         prev_value=prev_value, new_value=new_value)
             self.notify(change=self.NOTIFY_UPDATE_ATTRIBUTES)
 
-    def _next_status_update_is_status(self):
-        # When we are back from a tamper setting, we get two updates
-        # subsequently as an open, and then a close, in the same second
-        return (self._last_open_tampered_at is not None and
-                self._last_closed_tampered_at is not None and
-                self._last_closed_tampered_at - self._last_open_tampered_at < 1)
-
-    def open(self):
-        if self.is_open and not self._next_status_update_is_status():
+    def open(self, detect_tamper=True):
+        # An open message for a sensor that is already open means the sensor
+        # is tampered, unless a closed message just cleared a tamper: the
+        # message following a tamper being cleared is the sensor status
+        if detect_tamper and self.is_open and not self._expect_status_update:
             self._last_open_tampered_at = time.time()
             self.tampered = True
         else:
+            self._expect_status_update = False
             self.status = 'Open'
 
     def closed(self):
         if self.tampered:
-            self._last_closed_tampered_at = time.time()
+            self._expect_status_update = True
             self.tampered = False
         else:
+            self._expect_status_update = False
             self.status = 'Closed'
 
     def __str__(self):
