@@ -211,6 +211,25 @@ Now, to install Qolsys Gateway with HACS, follow these steps:
    proceed with the download
 6. Qolsys Gateway is now installed, and HACS will inform you when updates are available
 
+> [!IMPORTANT]
+> HACS downloads AppDaemon apps to `/homeassistant/appdaemon/apps/` (the
+> `appdaemon/apps/` folder of your Home Assistant configuration directory).
+> Since version 0.15 of the AppDaemon add-on, AppDaemon reads its apps from
+> `/addon_configs/a0d7b954_appdaemon/apps/` instead, so it will not see
+> anything HACS installs. If you use the AppDaemon add-on, point AppDaemon at
+> the HACS folder by adding `app_dir` to the `appdaemon` section of
+> `/addon_configs/a0d7b954_appdaemon/appdaemon.yaml`, then restart the add-on:
+>
+> ```yaml
+> appdaemon:
+>   app_dir: /homeassistant/appdaemon/apps
+>   # ...
+> ```
+>
+> AppDaemon will then only load apps from `/homeassistant/appdaemon/apps/`,
+> so move your `apps.yaml` and any other apps you use from
+> `/addon_configs/a0d7b954_appdaemon/apps/` there too.
+
 
 #### Manually
 
@@ -218,9 +237,14 @@ Installing Qolsys Gateway manually can be summarized by putting the content of t
 `apps/` directory of this repository (the `qolsysgw/` directory) into the `apps/`
 directory of your AppDaemon installation.
 
-For instance, if your Home Assistant configuration directory is in `/hass/config/`,
-you most likely have AppDaemon setup in `/hass/config/appdaemon/`, and you can thus
-put `qolsysgw/` into `/hass/config/appdaemon/apps/`.
+Where that directory is depends on how you run AppDaemon:
+
+- **AppDaemon add-on (0.15 and later):** put `qolsysgw/` into
+  `/addon_configs/a0d7b954_appdaemon/apps/`. This folder is shown as
+  `addon_configs/a0d7b954_appdaemon/apps/` when browsing with the Samba or
+  SSH add-ons.
+- **Other installations (e.g. docker):** if your AppDaemon configuration is in
+  `/hass/config/appdaemon/`, put `qolsysgw/` into `/hass/config/appdaemon/apps/`.
 
 
 ## Configuration
@@ -305,11 +329,12 @@ To enable the feature and get your secure token, you will need to:
 
 ### Configuring Qolsys Gateway
 
-Qolsys Gateway needs to be configured in the `apps.yaml` file of AppDaemon.
-If your Home Assistant configuration directory is in `/hass/config/`, and
-AppDaemon in `/hass/config/appdaemon/`, you will find this file in
-`/hass/config/appdaemon/apps/apps.yaml` (next to the `qolsysgw/` directory
-we moved here previously).
+Qolsys Gateway needs to be configured in the `apps.yaml` file of AppDaemon,
+next to the `qolsysgw/` directory installed previously. With the AppDaemon
+add-on, this file is `/addon_configs/a0d7b954_appdaemon/apps/apps.yaml`
+(or `/homeassistant/appdaemon/apps/apps.yaml` if you set `app_dir` as
+described for HACS above). For other installations with AppDaemon in
+`/hass/config/appdaemon/`, it is `/hass/config/appdaemon/apps/apps.yaml`.
 
 
 #### Required configuration
