@@ -32,6 +32,62 @@ class TestIntegrationQolsysGatewayControl(TestQolsysGatewayBase):
 
         self.assertIsNotNone(error)
 
+
+    async def test_integration_control_stale_session_refreshes_discovery_once(self):
+        panel, gw, _, _ = await self._ready_panel_and_gw(
+            partition_ids=[0],
+            zone_ids=[10000],
+        )
+
+        config_topic = (
+            'homeassistant/alarm_control_panel/'
+            'qolsys_panel/partition0/config'
+        )
+        command_topic = 'homeassistant/alarm_control_panel/qolsys_panel/set'
+        stale_command = json.dumps({
+            'action': 'ARM_HOME',
+            'partition_id': 0,
+            'session_token': 'expired token',
+        })
+        startpos = len(gw.PUBLISHED.MESSAGES)
+
+        gw.mqtt_publish(command_topic, stale_command, namespace='mqtt')
+
+        error = await gw.wait_for_next_log(
+            timeout=self._TIMEOUT,
+            filters={'level': 'ERROR'},
+            match='^invalid session token',
+        )
+        self.assertIsNotNone(error)
+
+        refresh = await gw.wait_for_next_mqtt_publish(
+            timeout=self._TIMEOUT,
+            startpos=startpos,
+            filters={'topic': config_topic},
+        )
+        self.assertIsNotNone(refresh)
+        self.assertTrue(refresh['retain'])
+
+        config = json.loads(refresh['payload'])
+        template = json.loads(config['command_template'])
+        self.assertEqual(gw._session_token, template['session_token'])
+
+        # A second stale command within the two-minute cooldown must not
+        # produce another discovery config update.
+        gw.mqtt_publish(command_topic, stale_command, namespace='mqtt')
+        error = await gw.wait_for_next_log(
+            timeout=self._TIMEOUT,
+            filters={'level': 'ERROR'},
+            match='^invalid session token',
+        )
+        self.assertIsNotNone(error)
+
+        config_publishes = [
+            msg for msg in gw.PUBLISHED.MESSAGES[startpos:]
+            if msg['topic'] == config_topic
+        ]
+        self.assertEqual(1, len(config_publishes))
+
     async def _test_control_arming(self, control_action, partition_status,
                                    arming_type, send_code=False,
                                    expect_error=None, expect_delay=None,
