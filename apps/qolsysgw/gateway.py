@@ -129,7 +129,7 @@ class QolsysGateway(Mqtt):
                 'configured the MQTT plugin properly in appdaemon.yaml?')
 
         self._session_token = str(uuid.uuid4())
-        self._last_session_discovery_refresh = 0.0
+        self._last_session_discovery_refresh = None
 
         self._factory = MqttWrapperFactory(
             mqtt_publish=self.mqtt_publish,
@@ -324,7 +324,8 @@ class QolsysGateway(Mqtt):
             # restart. Re-announce the current session token on MQTT discovery.
             # Throttle recovery: never restart the broker or retry an arm command.
             now = time.monotonic()
-            if now - self._last_session_discovery_refresh >= 120:
+            if (self._last_session_discovery_refresh is None or
+                    now - self._last_session_discovery_refresh >= 120):
                 self._last_session_discovery_refresh = now
                 try:
                     for partition in self._state.partitions:
