@@ -1,4 +1,5 @@
 import logging
+import time
 import traceback
 import uuid
 
@@ -128,6 +129,7 @@ class QolsysGateway(Mqtt):
                 'configured the MQTT plugin properly in appdaemon.yaml?')
 
         self._session_token = str(uuid.uuid4())
+        self._last_session_discovery_refresh = 0.0
 
         self._factory = MqttWrapperFactory(
             mqtt_publish=self.mqtt_publish,
@@ -318,6 +320,18 @@ class QolsysGateway(Mqtt):
                 self._cfg.user_control_token is None or
                 control.session_token != self._cfg.user_control_token):
             LOGGER.error(f'invalid session token for {control}')
+            # Home Assistant may retain an old command_template across a gateway
+            # restart. Re-announce the current session token on MQTT discovery.
+            # Throttle recovery: never restart the broker or retry an arm command.
+            now = time.monotonic()
+            if now - self._last_session_discovery_refresh >= 120:
+                self._last_session_discovery_refresh = now
+                try:
+                    for partition in self._state.partitions:
+                        self._factory.wrap(partition).configure()
+                    LOGGER.warning('Re-published Qolsys MQTT discovery after stale session token')
+                except Exception:
+                    LOGGER.exception('Failed to refresh Qolsys MQTT discovery')
             return
 
         if control.requires_config:
